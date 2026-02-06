@@ -41,14 +41,11 @@ jobs:
           cd dist && zip -r ../../frontend.zip .
 
       - name: Deploy backend
-        env:
-          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
         run: |
-          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
           if ! response=$(curl -sS -w "\n%{http_code}" -X POST \
             -H "X-Shipyard-Key: ${{ secrets.SHIPYARD_ADMIN_KEY }}" \
             --data-binary @shipyard-freebsd \
-            "${URL}/deploy/self"); then
+            "${{secrets.SHIPYARD_DOMAIN}}/deploy/self"); then
             echo "curl failed to connect"
             exit 1
           fi
@@ -59,16 +56,13 @@ jobs:
           [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]
 
       - name: Wait for restart
-        env:
-          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
         run: |
-          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
           echo "Waiting for server to restart..."
           sleep 10
           for i in $(seq 1 30); do
             code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 5 \
               -H "Cache-Control: no-cache" \
-              "${URL}/health?_=${i}" 2>/dev/null || echo "000")
+              "${{secrets.SHIPYARD_DOMAIN}}/health?_=${i}" 2>/dev/null || echo "000")
             if [ "$code" = "200" ]; then
               echo "Server is back up (attempt ${i})"
               exit 0
@@ -80,18 +74,15 @@ jobs:
           exit 1
 
       - name: Deploy frontend
-        env:
-          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
         run: |
-          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
-          SITE=$(echo "$URL" | sed 's|https\?://||' | cut -d'/' -f1)
+          SITE=$(echo "${{secrets.SHIPYARD_DOMAIN}}" | sed 's|https\?://||' | cut -d'/' -f1)
           if ! response=$(curl -sS -w "\n%{http_code}" -X POST \
             -H "X-Shipyard-Key: ${{ secrets.SHIPYARD_ADMIN_KEY }}" \
             -F "site=${SITE}" \
             -F "commit=${{ env.SHORT_SHA }}" \
             -F "update_latest=true" \
             -F "artifact=@frontend.zip" \
-            "${URL}/deploy/frontend"); then
+            "${{secrets.SHIPYARD_DOMAIN}}/deploy/frontend"); then
             echo "curl failed to connect"
             exit 1
           fi
