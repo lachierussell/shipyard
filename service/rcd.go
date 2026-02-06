@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 type rcdData struct {

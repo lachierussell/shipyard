@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/shipyard/shipyard/cmd"
+	"github.com/lachierussell/shipyard/cmd"
 )
 
 var (

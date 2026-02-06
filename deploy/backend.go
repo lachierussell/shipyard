@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/jail"
-	"github.com/shipyard/shipyard/service"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/jail"
+	"github.com/lachierussell/shipyard/service"
 )
 
 // BackendDeployer handles backend service deployment

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 // AdminAuth checks X-Shipyard-Key against admin_keys

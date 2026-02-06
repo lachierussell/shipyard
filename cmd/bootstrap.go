@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/shipyard/shipyard/nginx"
+	"github.com/lachierussell/shipyard/nginx"
 )
 
 // Bootstrap sets up shipyard on a fresh FreeBSD system

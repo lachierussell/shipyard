@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/nginx"
-	"github.com/shipyard/shipyard/ssl"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/nginx"
+	"github.com/lachierussell/shipyard/ssl"
 )
 
 // FrontendDeployer handles frontend deployment

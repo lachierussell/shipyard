@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/logger"
-	"github.com/shipyard/shipyard/pidfile"
-	"github.com/shipyard/shipyard/server"
-	"github.com/shipyard/shipyard/update"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/logger"
+	"github.com/lachierussell/shipyard/pidfile"
+	"github.com/lachierussell/shipyard/server"
+	"github.com/lachierussell/shipyard/update"
 )
 
 // Serve starts the HTTP server

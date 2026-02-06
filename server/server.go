@@ -5,13 +5,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/deploy"
-	"github.com/shipyard/shipyard/jail"
-	"github.com/shipyard/shipyard/nginx"
-	"github.com/shipyard/shipyard/service"
-	"github.com/shipyard/shipyard/ssl"
-	"github.com/shipyard/shipyard/update"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/deploy"
+	"github.com/lachierussell/shipyard/jail"
+	"github.com/lachierussell/shipyard/nginx"
+	"github.com/lachierussell/shipyard/service"
+	"github.com/lachierussell/shipyard/ssl"
+	"github.com/lachierussell/shipyard/update"
 )
 
 // MaxRequestSize is the maximum allowed request body size (500MB)

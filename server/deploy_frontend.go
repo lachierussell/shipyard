@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/shipyard/shipyard/nginx"
+	"github.com/lachierussell/shipyard/nginx"
 )
 
 // commitHashRegex validates git commit hashes (7-40 hex chars)
@@ -178,25 +178,25 @@ func (s *Server) DeployFrontend(c *fiber.Ctx) error {
 	if !reloaded {
 		log.Warn("frontend deploy partial: nginx validation failed", "nginx_error", nginxErr)
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"status":              "partially_deployed",
-			"error":               "nginx_validation_failed",
-			"detail":              nginxErr,
-			"commit_deployed":     true,
-			"nginx_reloaded":      false,
-			"latest_updated":      updateLatest,
-			"site":                siteName,
-			"commit":              commitHash,
+			"status":          "partially_deployed",
+			"error":           "nginx_validation_failed",
+			"detail":          nginxErr,
+			"commit_deployed": true,
+			"nginx_reloaded":  false,
+			"latest_updated":  updateLatest,
+			"site":            siteName,
+			"commit":          commitHash,
 		})
 	}
 
 	log.Info("frontend deploy succeeded", "update_latest", updateLatest)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":          "deployed",
-		"site":            siteName,
-		"commit":          commitHash,
-		"path":            fmt.Sprintf("%s/%s", site.FrontendRoot, commitHash),
-		"nginx_reloaded":  true,
-		"latest_updated":  updateLatest,
+		"status":         "deployed",
+		"site":           siteName,
+		"commit":         commitHash,
+		"path":           fmt.Sprintf("%s/%s", site.FrontendRoot, commitHash),
+		"nginx_reloaded": true,
+		"latest_updated": updateLatest,
 	})
 }
 

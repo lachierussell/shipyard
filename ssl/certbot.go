@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 // AcmeWebroot is the directory where ACME challenges are served from

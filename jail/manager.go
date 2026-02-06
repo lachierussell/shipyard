@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 // Manager handles jail lifecycle operations using pot

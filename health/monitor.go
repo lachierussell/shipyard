@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/service"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/service"
 )
 
 // Monitor manages backend health monitoring and auto-restart

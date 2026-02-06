@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 func TestAdminAuth_ValidKey(t *testing.T) {

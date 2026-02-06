@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 func TestNormalizeDomainName(t *testing.T) {

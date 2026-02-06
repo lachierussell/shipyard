@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/shipyard/shipyard/nginx"
-	"github.com/shipyard/shipyard/ssl"
+	"github.com/lachierussell/shipyard/nginx"
+	"github.com/lachierussell/shipyard/ssl"
 )
 
 // SiteInit initializes a new site (creates directories, jails, nginx config, etc)

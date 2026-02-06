@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/shipyard/shipyard/nginx"
+	"github.com/lachierussell/shipyard/nginx"
 )
 
 // NginxExample returns the example nginx override template.

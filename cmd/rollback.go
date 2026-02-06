@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/update"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/update"
 )
 
 // Rollback restores the previous binary from backup

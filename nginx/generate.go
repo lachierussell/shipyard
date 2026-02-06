@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/shipyard/shipyard/config"
+	"github.com/lachierussell/shipyard/config"
 )
 
 //go:embed backend_proxy.conf.tmpl

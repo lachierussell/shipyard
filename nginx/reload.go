@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/shipyard/shipyard/config"
-	"github.com/shipyard/shipyard/ssl"
+	"github.com/lachierussell/shipyard/config"
+	"github.com/lachierussell/shipyard/ssl"
 )
 
 // Manager orchestrates the nginx config deployment: write → validate → symlink → reload
