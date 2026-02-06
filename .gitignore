@@ -1,0 +1,18 @@
+# Build binaries
+bin/
+shipyard
+shipyard-darwin
+shipyard-freebsd
+
+# Web
+web/dist/
+web/node_modules/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# macOS
+.DS_Store
+
+.nova/

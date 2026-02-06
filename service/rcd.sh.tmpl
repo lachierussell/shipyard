@@ -1,0 +1,73 @@
+#!/bin/sh
+# PROVIDE: <%.ServiceName%>
+# REQUIRE: NETWORKING pot
+# KEYWORD: shutdown
+#
+# MANAGED BY SHIPYARD — DO NOT EDIT
+#
+# This service runs a backend application inside a pot (FreeBSD jail)
+
+. /etc/rc.subr
+
+name="<%.ServiceName%>"
+rcvar="${name}_enable"
+pidfile="/var/run/${name}.pid"
+
+pot_name="<%.PotName%>"
+binary_path="<%.BinaryPath%>"
+listen_port="<%.ListenPort%>"
+
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+
+<%.ServiceName%>_start() {
+    if checkyesno ${rcvar}; then
+        echo "Starting ${name} in pot ${pot_name}..."
+
+        # Start the pot if not running
+        /usr/local/bin/pot start -p ${pot_name} 2>/dev/null
+
+        # Run the binary inside the pot with proper environment
+        # PORT: the port to listen on
+        # HOST: 0.0.0.0 to accept connections on the jail's IP
+        /usr/local/bin/pot exec -p ${pot_name} env PORT=${listen_port} HOST=0.0.0.0 /usr/sbin/daemon -P ${pidfile} -r -R 5 -o /var/log/app.log -f ${binary_path}
+
+        echo "Started ${name}"
+    fi
+}
+
+<%.ServiceName%>_stop() {
+    echo "Stopping ${name}..."
+
+    # Kill the process inside the pot
+    if [ -f ${pidfile} ]; then
+        kill $(cat ${pidfile}) 2>/dev/null
+        rm -f ${pidfile}
+    fi
+
+    # Stop the pot
+    /usr/local/bin/pot stop -p ${pot_name} 2>/dev/null
+
+    echo "Stopped ${name}"
+}
+
+<%.ServiceName%>_status() {
+    if /usr/local/bin/pot ps -q | grep -q "^${pot_name}$"; then
+        if [ -f ${pidfile} ] && kill -0 $(cat ${pidfile}) 2>/dev/null; then
+            echo "${name} is running in pot ${pot_name}"
+            return 0
+        else
+            echo "${name} pot is running but service is not"
+            return 1
+        fi
+    else
+        echo "${name} is not running"
+        return 1
+    fi
+}
+
+load_rc_config $name
+: ${<%.ServiceName%>_enable:=no}
+
+run_rc_command "$1"

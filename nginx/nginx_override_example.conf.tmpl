@@ -1,0 +1,37 @@
+# Example nginx override config for Shipyard
+#
+# Available template variables (use <% %> delimiters):
+#   <%.Domain%>       - site domain (e.g., "example.com")
+#   <%.FrontendRoot%> - frontend root path (e.g., "/var/www/example.com")
+#   <%.ProxyPath%>    - backend proxy path (e.g., "/api"), empty if no backend
+#   <%.ListenPort%>   - backend listen port (e.g., 8080), 0 if no backend
+#   <%.AcmeWebroot%>  - ACME challenge directory ("/var/www/acme")
+#   <%.SSLEnabled%>   - whether SSL is enabled for this site
+#
+# Note: If SSL is enabled, Shipyard automatically transforms this config
+# to HTTPS (adds SSL directives, creates HTTP->HTTPS redirect block).
+
+server {
+    listen 80;
+    server_name <%.Domain%>;
+
+    # ACME challenge for Let's Encrypt
+    location /.well-known/acme-challenge/ {
+        root <%.AcmeWebroot%>;
+    }
+
+    # Frontend static files
+    root <%.FrontendRoot%>/latest;
+    index index.html;
+
+    # SPA fallback for frontend routes
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Static asset caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}

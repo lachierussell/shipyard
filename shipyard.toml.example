@@ -1,0 +1,60 @@
+# Shipyard deployment framework configuration example
+# Copy this to /usr/local/etc/shipyard/shipyard.toml and customize
+
+# Admin keys for site lifecycle operations (init, destroy, deploy/self)
+# IMPORTANT: This must be at the root level, before any [section] headers
+admin_keys = [
+    "sk-admin-replace-me-with-a-real-key-1234567890abcdefg",
+]
+
+[server]
+listen_addr = "0.0.0.0:8443"
+log_file    = "/var/log/shipyard/shipyard.log"
+
+[nginx]
+binary_path     = "/usr/local/sbin/nginx"
+main_conf_path  = "/usr/local/etc/nginx/nginx.conf"
+sites_available = "/usr/local/etc/nginx/sites-available"
+sites_enabled   = "/usr/local/etc/nginx/sites-enabled"
+override_conf   = "/usr/local/etc/nginx/override.conf"
+
+[jail]
+base_dir       = "/var/jails"
+jail_conf_path = "/etc/jail.conf"
+freebsd_version = "14.3-RELEASE"
+tarball_cache  = "/var/cache/shipyard/base.txz"
+ip_base        = "127.0.1"
+
+[health]
+poll_interval     = "15s"
+failure_threshold = 3
+
+[self]
+binary_path = "/usr/local/bin/shipyard"
+pid_file    = "/var/run/shipyard.pid"
+config_dir  = "/usr/local/etc/shipyard"
+
+# Example site configuration
+[site.myapp]
+domain        = "myapp.example.com"
+frontend_root = "/usr/local/www/myapp.example.com"
+api_key       = "sk-live-myapp-replace-with-real-key-1234567890"
+override_ips  = ["198.51.100.0/24", "10.0.0.0/8"]
+# SSL - auto-generates Let's Encrypt certs on site init, adds HTTPS with HTTP redirect
+ssl_enabled   = true
+
+# Backend config (optional - omit for frontend-only sites)
+[site.myapp.backend]
+jail_name   = "myapp-api"
+jail_ip     = "127.0.1.2"
+listen_port = 8080
+proxy_path  = "/api"
+binary_name = "myapp-api"
+
+# Example frontend-only site
+[site.docs]
+domain        = "docs.example.com"
+frontend_root = "/usr/local/www/docs.example.com"
+api_key       = "sk-live-docs-replace-with-real-key-1234567890"
+override_ips  = []  # Override disabled for this site
+# no backend section = frontend only

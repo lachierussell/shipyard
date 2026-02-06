@@ -1,0 +1,102 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Build backend for FreeBSD arm64
+        run: |
+          GOOS=freebsd GOARCH=arm64 go build \
+            -ldflags "-X main.Version=${{ github.ref_name }} -X main.Commit=${{ env.SHORT_SHA }}" \
+            -o shipyard-freebsd .
+
+      - name: Build frontend
+        run: |
+          cd web && npm ci && npm run build
+          cd dist && zip -r ../../frontend.zip .
+
+      - name: Deploy backend
+        env:
+          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
+        run: |
+          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
+          if ! response=$(curl -sS -w "\n%{http_code}" -X POST \
+            -H "X-Shipyard-Key: ${{ secrets.SHIPYARD_ADMIN_KEY }}" \
+            --data-binary @shipyard-freebsd \
+            "${URL}/deploy/self"); then
+            echo "curl failed to connect"
+            exit 1
+          fi
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "$body"
+          echo "HTTP Status: $http_code"
+          [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]
+
+      - name: Wait for restart
+        env:
+          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
+        run: |
+          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
+          echo "Waiting for server to restart..."
+          sleep 10
+          for i in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 5 \
+              -H "Cache-Control: no-cache" \
+              "${URL}/health?_=${i}" 2>/dev/null || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "Server is back up (attempt ${i})"
+              exit 0
+            fi
+            echo "Attempt ${i}: HTTP ${code}"
+            sleep 2
+          done
+          echo "Server did not come back within 70s"
+          exit 1
+
+      - name: Deploy frontend
+        env:
+          SHIPYARD_URL: ${{ secrets.SHIPYARD_DOMAIN }}
+        run: |
+          URL=$(echo "$SHIPYARD_URL" | tr -d '[:space:]')
+          SITE=$(echo "$URL" | sed 's|https\?://||' | cut -d'/' -f1)
+          if ! response=$(curl -sS -w "\n%{http_code}" -X POST \
+            -H "X-Shipyard-Key: ${{ secrets.SHIPYARD_ADMIN_KEY }}" \
+            -F "site=${SITE}" \
+            -F "commit=${{ env.SHORT_SHA }}" \
+            -F "update_latest=true" \
+            -F "artifact=@frontend.zip" \
+            "${URL}/deploy/frontend"); then
+            echo "curl failed to connect"
+            exit 1
+          fi
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "$body"
+          echo "HTTP Status: $http_code"
+          [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]

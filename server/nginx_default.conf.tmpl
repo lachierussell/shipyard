@@ -1,0 +1,9 @@
+server {
+    listen 80;
+    server_name <%.ServerName%>;
+
+    location / {
+        root <%.FrontendRoot%>/latest;
+        try_files $uri $uri/ /index.html;
+    }
+}
