@@ -58,6 +58,45 @@ api_key = "sk-site-test-key"
 	}
 }
 
+func TestLoad_JailBinaryPath(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.toml")
+
+	content := `
+admin_keys = ["sk-test-admin-key"]
+
+[server]
+listen_addr = "0.0.0.0:8080"
+
+[nginx]
+binary_path = "/usr/sbin/nginx"
+main_conf_path = "/etc/nginx/nginx.conf"
+sites_available = "/etc/nginx/sites-available"
+sites_enabled = "/etc/nginx/sites-enabled"
+
+[jail]
+binary_path = "/usr/local/bin/pot"
+base_dir = "/var/jails"
+jail_conf_path = "/etc/jail.conf"
+
+[site."test.example.com"]
+frontend_root = "/var/www/test"
+api_key = "sk-site-test-key"
+`
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.Jail.BinaryPath != "/usr/local/bin/pot" {
+		t.Errorf("Jail.BinaryPath = %q, want %q", cfg.Jail.BinaryPath, "/usr/local/bin/pot")
+	}
+}
+
 func TestLoad_FileNotFound(t *testing.T) {
 	_, err := Load("/nonexistent/path/config.toml")
 	if err == nil {
