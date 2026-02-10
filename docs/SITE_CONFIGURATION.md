@@ -91,6 +91,17 @@ Backend services run in FreeBSD jails managed by `pot`:
 
 The `inherit` network mode allows backends to make outbound connections (required for proxies, API calls, etc.).
 
+### Pot Binary Path
+
+By default, shipyard looks for `pot` on `$PATH`. When running as a daemon (via rc.d), `$PATH` may not include `/usr/local/bin`, causing `pot` commands to fail. Set an absolute path in `shipyard.toml`:
+
+```toml
+[jail]
+binary_path = "/usr/local/bin/pot"
+```
+
+If `binary_path` is omitted or empty, shipyard falls back to the bare name `"pot"`. This means existing config files from older versions continue to work after a self-update — but adding the absolute path is recommended for daemon deployments.
+
 ## Common Issues
 
 ### "Too many levels of symbolic links"
@@ -101,6 +112,17 @@ The frontend directory has no `index.html`. Deploy frontend files or create a pl
 
 ### nginx variable names with hyphens
 Domain names with hyphens (e.g., `my-app.example.com`) are normalized to underscores for nginx variables (`my_app_example_com`).
+
+### `pot` not found when running as a daemon
+When shipyard runs via rc.d, the daemon's `$PATH` may not include `/usr/local/bin`. Set `binary_path` under `[jail]` to the absolute path (see "Pot Binary Path" above). Shipyard logs a warning at startup if the configured pot binary cannot be found.
+
+### HTTP 413 on large uploads
+The default nginx proxy location for `/api/` may not have its own `client_max_body_size`. Ensure the `/api/` location block includes:
+```nginx
+client_max_body_size 500m;
+proxy_request_buffering off;
+```
+New installs via `install.sh` include this automatically. For existing servers, add the directives to your `default.conf` `/api/` location and run `service nginx reload`.
 
 ### Backend can't make outbound connections
 The jail was created with `alias` networking. Recreate with `inherit`:

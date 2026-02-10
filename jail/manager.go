@@ -19,6 +19,14 @@ func NewManager(cfg *config.Config) *Manager {
 	return &Manager{cfg: cfg}
 }
 
+// potCmd returns the configured pot binary path, falling back to "pot" if unset.
+func (m *Manager) potCmd() string {
+	if m.cfg.Jail.BinaryPath != "" {
+		return m.cfg.Jail.BinaryPath
+	}
+	return "pot"
+}
+
 // potName converts a site name to a valid pot name (alphanumeric and hyphens only)
 func potName(siteName string) string {
 	// Replace dots with hyphens for pot compatibility
@@ -50,7 +58,7 @@ func (m *Manager) EnsureExists(siteName string) error {
 
 // potExists checks if a pot with the given name exists
 func (m *Manager) potExists(name string) bool {
-	cmd := exec.Command("pot", "info", "-p", name)
+	cmd := exec.Command(m.potCmd(), "info", "-p", name)
 	return cmd.Run() == nil
 }
 
@@ -70,7 +78,7 @@ func (m *Manager) createPot(siteName string) error {
 		"-N", "inherit",
 	}
 
-	cmd := exec.Command("pot", args...)
+	cmd := exec.Command(m.potCmd(), args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("pot create: %w: %s", err, string(output))
@@ -92,7 +100,7 @@ func (m *Manager) Start(siteName string) error {
 
 	name := potName(siteName)
 	slog.Info("starting pot", "site", siteName, "pot", name)
-	cmd := exec.Command("pot", "start", "-p", name)
+	cmd := exec.Command(m.potCmd(), "start", "-p", name)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("pot start: %w: %s", err, string(output))
@@ -113,7 +121,7 @@ func (m *Manager) Stop(siteName string) error {
 
 	name := potName(siteName)
 	slog.Debug("stopping pot", "site", siteName, "pot", name)
-	cmd := exec.Command("pot", "stop", "-p", name)
+	cmd := exec.Command(m.potCmd(), "stop", "-p", name)
 	if err := cmd.Run(); err != nil {
 		slog.Debug("pot stop failed (may not be running)", "site", siteName, "error", err)
 	}
@@ -138,7 +146,7 @@ func (m *Manager) Destroy(siteName string) error {
 	m.Stop(siteName)
 
 	// Destroy pot
-	cmd := exec.Command("pot", "destroy", "-p", name)
+	cmd := exec.Command(m.potCmd(), "destroy", "-p", name)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("pot destroy: %w: %s", err, string(output))
@@ -160,7 +168,7 @@ func (m *Manager) CopyIn(siteName string, srcPath string, destPath string) error
 
 	name := potName(siteName)
 	// Use -F flag to allow copying to a running pot
-	cmd := exec.Command("pot", "copy-in", "-p", name, "-F", "-s", srcPath, "-d", destPath)
+	cmd := exec.Command(m.potCmd(), "copy-in", "-p", name, "-F", "-s", srcPath, "-d", destPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("pot copy-in: %w: %s", err, string(output))
@@ -186,7 +194,7 @@ func (m *Manager) Exec(siteName string, command string, args ...string) error {
 	execArgs := []string{"exec", "-p", name, command}
 	execArgs = append(execArgs, args...)
 
-	cmd := exec.Command("pot", execArgs...)
+	cmd := exec.Command(m.potCmd(), execArgs...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("pot exec: %w: %s", err, string(output))
@@ -209,7 +217,7 @@ func (m *Manager) IsRunning(siteName string) bool {
 	name := potName(siteName)
 
 	// pot ps lists running pots
-	cmd := exec.Command("pot", "ps", "-q")
+	cmd := exec.Command(m.potCmd(), "ps", "-q")
 	output, err := cmd.Output()
 	if err != nil {
 		return false
@@ -240,7 +248,7 @@ func (m *Manager) GetPotPath(siteName string) (string, error) {
 	name := potName(siteName)
 
 	// Get pot info to find the path
-	cmd := exec.Command("pot", "info", "-p", name, "-E")
+	cmd := exec.Command(m.potCmd(), "info", "-p", name, "-E")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("pot info: %w", err)

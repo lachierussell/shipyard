@@ -152,6 +152,7 @@ sites_enabled   = "/usr/local/etc/nginx/sites-enabled"
 override_conf   = "/usr/local/etc/nginx/override.conf"
 
 [jail]
+binary_path     = "/usr/local/bin/pot"
 base_dir        = "/var/jails"
 jail_conf_path  = "/etc/jail.conf"
 freebsd_version = "${FREEBSD_VERSION}"
@@ -388,6 +389,8 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 500m;
+        proxy_request_buffering off;
     }
 
     location / {

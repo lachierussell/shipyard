@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -28,6 +29,9 @@ func Serve(version, commit string) error {
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
+
+	// Validate that required tools are available
+	validateTools(cfg)
 
 	// Create log hub for WebSocket streaming
 	logHub := server.NewLogHub()
@@ -96,5 +100,23 @@ func checkBackupBinary(binaryPath string) {
 			"path", binaryPath+".old",
 			"hint", "run 'shipyard rollback' to restore the previous version",
 		)
+	}
+}
+
+// validateTools checks that required external tools (nginx, pot) are reachable and logs warnings if not.
+func validateTools(cfg *config.Config) {
+	// Check nginx binary
+	nginxPath := cfg.Nginx.BinaryPath
+	if _, err := exec.LookPath(nginxPath); err != nil {
+		slog.Warn("nginx binary not found", "path", nginxPath, "error", err)
+	}
+
+	// Check pot binary
+	potPath := cfg.Jail.BinaryPath
+	if potPath == "" {
+		potPath = "pot"
+	}
+	if _, err := exec.LookPath(potPath); err != nil {
+		slog.Warn("pot binary not found", "path", potPath, "error", err)
 	}
 }

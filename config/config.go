@@ -42,6 +42,7 @@ type NginxConfig struct {
 }
 
 type JailConfig struct {
+	BinaryPath     string `toml:"binary_path"`
 	BaseDir        string `toml:"base_dir"`
 	JailConfPath   string `toml:"jail_conf_path"`
 	FreeBSDVersion string `toml:"freebsd_version"`
