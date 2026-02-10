@@ -10,6 +10,7 @@ import (
 
 	"github.com/lachierussell/shipyard/config"
 	"github.com/lachierussell/shipyard/logger"
+	"github.com/lachierussell/shipyard/nginx"
 	"github.com/lachierussell/shipyard/pidfile"
 	"github.com/lachierussell/shipyard/server"
 	"github.com/lachierussell/shipyard/update"
@@ -40,6 +41,14 @@ func Serve(version, commit string) error {
 	// Initialize structured logging with broadcast to WebSocket clients
 	if err := logger.InitWithBroadcaster(cfg.Server.LogFile, cfg.Server.LogLevel, logHub); err != nil {
 		return fmt.Errorf("init logger: %w", err)
+	}
+
+	// Ensure managed nginx.conf is up to date (picks up fixes from self-updates)
+	nginxMgr := nginx.NewManager(cfg)
+	if updated, err := nginxMgr.EnsureMainConf(); err != nil {
+		slog.Warn("failed to update nginx main config", "error", err)
+	} else if updated {
+		slog.Info("nginx main config updated and reloaded")
 	}
 
 	// Startup safety check: warn if backup binary exists

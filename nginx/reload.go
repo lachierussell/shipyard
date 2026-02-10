@@ -21,6 +21,45 @@ func NewManager(cfg *config.Config) *Manager {
 	return &Manager{cfg: cfg}
 }
 
+// EnsureMainConf writes the managed main nginx.conf if it has changed.
+// Called at startup so that self-updates can ship nginx.conf fixes (e.g. client_max_body_size).
+// Returns true if the file was updated and nginx was reloaded.
+func (m *Manager) EnsureMainConf() (bool, error) {
+	desired := GenerateMainConf()
+	confPath := m.cfg.Nginx.MainConfPath
+
+	// Read existing config
+	existing, err := os.ReadFile(confPath)
+	if err != nil && !os.IsNotExist(err) {
+		return false, fmt.Errorf("read main conf: %w", err)
+	}
+
+	if string(existing) == desired {
+		return false, nil
+	}
+
+	slog.Info("updating nginx main config", "path", confPath)
+	if err := os.WriteFile(confPath, []byte(desired), 0644); err != nil {
+		return false, fmt.Errorf("write main conf: %w", err)
+	}
+
+	// Validate before reloading
+	if err := Validate(m.cfg); err != nil {
+		// Restore old config on validation failure
+		if len(existing) > 0 {
+			os.WriteFile(confPath, existing, 0644)
+		}
+		return false, fmt.Errorf("nginx validation failed after main conf update: %w", err)
+	}
+
+	cmd := exec.Command(m.cfg.Nginx.BinaryPath, "-s", "reload")
+	if err := cmd.Run(); err != nil {
+		return false, fmt.Errorf("nginx reload: %w", err)
+	}
+
+	return true, nil
+}
+
 // DeploySiteConfig writes a site config to sites-available, validates it, and reloads nginx
 // If SSL is enabled for the site, it transforms the config to HTTPS
 func (m *Manager) DeploySiteConfig(siteName string, nginxConfig string) (bool, string, error) {

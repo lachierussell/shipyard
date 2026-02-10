@@ -117,12 +117,10 @@ Domain names with hyphens (e.g., `my-app.example.com`) are normalized to undersc
 When shipyard runs via rc.d, the daemon's `$PATH` may not include `/usr/local/bin`. Set `binary_path` under `[jail]` to the absolute path (see "Pot Binary Path" above). Shipyard logs a warning at startup if the configured pot binary cannot be found.
 
 ### HTTP 413 on large uploads
-The default nginx proxy location for `/api/` may not have its own `client_max_body_size`. Ensure the `/api/` location block includes:
+Shipyard's managed `nginx.conf` includes `client_max_body_size 500M;` at the http level. On startup, shipyard automatically updates the main nginx.conf and reloads nginx if the config has changed, so this fix is applied automatically after a self-update. If you manage nginx.conf manually, ensure the http block includes:
 ```nginx
-client_max_body_size 500m;
-proxy_request_buffering off;
+client_max_body_size 500M;
 ```
-New installs via `install.sh` include this automatically. For existing servers, add the directives to your `default.conf` `/api/` location and run `service nginx reload`.
 
 ### Backend can't make outbound connections
 The jail was created with `alias` networking. Recreate with `inherit`:
